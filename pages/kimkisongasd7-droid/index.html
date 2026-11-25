@@ -1,0 +1,34 @@
+```html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>페이지 이름</title>
+  <link rel="stylesheet" href="../../common.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 공용 헤더: common.js가 채웁니다(받는 사람의 사이트에서는 그 사람의 서비스 이름과 메뉴) -->
+  <header id="site-header"></header>
+
+  <main>
+    <h1>페이지 이름</h1>
+    <!-- 입력이 필요하면 여기에 둡니다(예: <input id="q" type="search">). 이벤트는 app.js에서 addEventListener로 -->
+
+    <!-- 결과 칸: app.js가 API 결과를 넣습니다(상태 문구는 setState가 이 바로 위에 넣음) -->
+    <section id="result" class="result"></section>
+  </main>
+
+  <!-- 공용 푸터: common.js가 TMDB 고지를 채우고, 아래 출처 한 줄은 그대로 남습니다 -->
+  <footer id="site-footer">
+    <p>자료 출처: API 이름(제공기관)</p>
+  </footer>
+
+  <!-- 공용 파일은 맨 위 폴더의 것을 ../../로 부릅니다(내 폴더에 복사하지 않음). 키는 내 폴더의 keys.js -->
+  <script src="../../config.js"></script>
+  <script src="keys.js"></script>
+  <script src="../../common.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
