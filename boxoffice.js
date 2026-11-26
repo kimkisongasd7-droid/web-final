@@ -39,7 +39,10 @@ function renderBoxOffice(movies) {
   if (movies.length === 0) {
     setState(list, "empty", "어제 박스오피스 자료가 없습니다.");
   }
-  // TODO 필수 6: TMDB 영화 포스터 매칭을 만들어 여기서 부르기(파일 끝의 4단계 주석)
+  if (movies.length === 0) {
+    setState(list, "empty", "어제 박스오피스 자료가 없습니다.")
+  }
+  matchPosters(movies);
 }
 
 // formatNumber : 숫자(글자도 됨) ⇒ 천 단위 쉼표 글자(#2, #3과 같음)
@@ -71,3 +74,29 @@ function changeText(m) {
    주의: 영화가 10편이라 TMDB 요청도 10번입니다. for...of 안에서 한 편씩 await해도 됩니다
    (Promise.all로 한꺼번에 하는 방법은 수업 밖 문법이라 쓰면 출처 주석).
    샘플 모드에서는 가상 영화라 포스터가 없어 모두 대체 표지로 남습니다(키를 넣으면 실제 포스터). */
+
+async function findPoster(m) {
+  try {
+    const data = await fetchJSON(tmdbUrl("search/movie", { query: m.movieNm }));
+    for (const r of data.results) {
+      const date = r.release_date || "";
+      if (date.slice(0, 4) === m.openDt.slice(0, 4)) {
+        return r.poster_path || null;
+      }
+    }
+    return null;
+  } catch (err) {
+    return null;
+  }
+}
+async function matchPosters(movies) {
+  const boxes = document.querySelectorAll(".bo-poster");
+  let i = 0;
+  for (const m of movies) {
+    const path = await findPoster(m);
+    if (path !== null) {
+      boxes[i].innerHTML = `<img class="poster" src="${posterUrl(path, "w342")}" alt="${escapeHTML(m.movieNm)} 포스터">`;
+    }
+    i++;
+  }  
+}
