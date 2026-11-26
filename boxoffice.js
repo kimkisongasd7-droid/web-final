@@ -1,4 +1,4 @@
-/* 페이지: 박스오피스(boxoffice.html)   만든 사람: 이름(GitHub 아이디)
+/* 페이지: 박스오피스(boxoffice.html)   만든 사람: 김기송(kimkisongasd7-droid)
    맡은 기능: 필수 6 KOBIS 박스오피스 + TMDB 영화 포스터 매칭
    수업 밖 문법: 없음(있으면 그 줄 위에 // 출처: 주석)
    생성형 AI 사용 기록: 없음 / 있으면 README.md의 생성형 AI 사용 내역에 */

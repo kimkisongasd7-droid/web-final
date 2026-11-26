@@ -1,4 +1,4 @@
-/* 페이지: 상세(detail.html)   만든 사람: 이름(GitHub 아이디)
+/* 페이지: 상세(detail.html)   만든 사람: 김기송(kimkisongasd7-droid)
    맡은 기능: 필수 4 상세(두 번째 호출, 목록에 없던 정보 2개)
    수업 밖 문법: 없음(있으면 그 줄 위에 // 출처: 주석)
    생성형 AI 사용 기록: 없음 / 있으면 README.md의 생성형 AI 사용 내역에 */
@@ -22,10 +22,22 @@ async function loadDetail() {
     if (movie.poster !== null) {
       poster = `<img class="poster" src="${posterUrl(movie.poster, "w342")}" alt="${escapeHTML(movie.title)} 포스터">`;
     }
+    let genres = "정보없음";
+    if (data.genres && data.genres.length > 0) {
+      genres = data.genres.map(g => g.name).join(", ");
+    }
+    let runtime = "정보없음";
+    if (data.runtime > 0) {
+      runtime = data.runtime + "분";
+    }
     detail.innerHTML = `
       ${poster}
       <div class="info">
         <h1>${escapeHTML(movie.title)}</h1>
+        <p class="meta">개봉일 ${escapeHTML(movie.date)}, 평점 ${escapeHTML(movie.rating)}</p>
+        <p class="meta">장르 ${escapeHTML(genres)}</p>
+        <p class="meta">상영시간 ${runtime}</p>
+        <p>${escapeHTML(movie.overview)}</p>
       </div>`;
     // TODO 필수 4: 목록에 없던 정보 2개 이상을 여기에(장르, 상영시간 등). 응답 data의 genres, runtime, tagline 등을 씁니다
   } catch (err) {

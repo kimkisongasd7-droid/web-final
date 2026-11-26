@@ -1,4 +1,4 @@
-/* 페이지: 보드(index.html)   만든 사람: 이름(GitHub 아이디)
+/* 페이지: 보드(index.html)   만든 사람: 김기송(kimkisongasd7-droid)
    맡은 기능: 필수 1 실시간 목록, 2 요청을 바꾸는 검색, 3 정렬 2가지, 5 찜과 찜 모두 지우기
    수업 밖 문법: 없음(있으면 그 줄 위에 // 출처: 주석)
    생성형 AI 사용 기록: 없음 / 있으면 README.md의 생성형 AI 사용 내역에 */
@@ -14,6 +14,20 @@ function sortBy(list, key, desc) {
         return result * sign;
     });
 }
+
+async function loadSearch(keyword){
+  const board = document.getElementById("board");
+  setState(board, "loading", "영화 목록을 불러오는 중입니다.");
+  try {
+    const data = await fetchJSON(tmdbUrl("search/movie", { query: keyword }));
+    setState(board, "done", "");
+    movies = data.results.map(toMovie);
+    refresh();
+  } catch (err) {
+    setState(board, "error", "검색 결과를 불러오지 못했습니다(" + err.message + ")");
+  }
+}
+
 
 
 let movies = [];
@@ -98,8 +112,50 @@ function refresh() {
     renderCards(getView()); 
 }
 
-document.getElementById("sort").addEventListener("change", refresh);
 
+
+
+
+
+
+
+
+
+document.getElementById("sort").addEventListener("change", refresh);
+//검색 이벤트
+document.getElementById("q").addEventListener("keydown", (e) => {
+  if (e.key !== "Enter") return;
+  const keyword = e.target.value.trim();
+  if(keyword === "") {
+    loadNowPlaying();
+  }else {
+    loadSearch(keyword);
+  }
+});
+// 찜 이벤트
+document.querySelector(".board").addEventListener("click", (e) => {
+    const card = e.target.closest(".card");
+    if (!card) return;
+    const id = Number(card.getAttribute("data-id"));
+    if (e.target.closest(".like")) {
+        const i = liked.indexOf(id);
+        if (i === -1) {
+            liked.push(id);
+        } else {
+            liked.splice(i, 1);
+        }
+        saveLiked(liked);
+        refresh();
+        return;
+    }
+    location.href = "detail.html?id=" + id;
+});
+// 찜 모두 지우기 이벤트
+document.getElementById("clearLiked").addEventListener("click", () => {
+  liked.splice(0, liked.length);
+  saveLiked(liked);
+  refresh();
+});
 
 
 // TODO 필수 2: 검색창에서 Enter를 치면 tmdbUrl("search/movie", { query: 검색어 })로 다시 불러와 그리기
