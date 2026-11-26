@@ -2,6 +2,25 @@
    맡은 기능: 필수 1 실시간 목록, 2 요청을 바꾸는 검색, 3 정렬 2가지, 5 찜과 찜 모두 지우기
    수업 밖 문법: 없음(있으면 그 줄 위에 // 출처: 주석)
    생성형 AI 사용 기록: 없음 / 있으면 README.md의 생성형 AI 사용 내역에 */
+function sortBy(list, key, desc) {
+    return [...list].sort((a, b) => {
+        let result = 0;
+        if (typeof a[key] === "string") {
+            result = a[key].localeCompare(b[key]);
+        } else {
+            result = a[key] - b[key];
+        }
+        const sign = desc ? -1 : 1;
+        return result * sign;
+    });
+}
+
+
+let movies = [];
+
+const liked = loadLiked();
+
+
 
 // board.js : 상영 중 목록 불러오기(기본형)
 async function loadNowPlaying() {
@@ -10,7 +29,8 @@ async function loadNowPlaying() {
   try {
     const data = await fetchJSON(tmdbUrl("movie/now_playing", { region: "KR" }));
     setState(board, "done", "");
-    renderCards(data.results.map(toMovie));   // 0건이면 #3의 빈 결과 문구
+    movies = data.results.map(toMovie);
+    refresh();
   } catch (err) {
     setState(board, "error", "목록을 불러오지 못했습니다(" + err.message + ")");
   }
@@ -19,35 +39,68 @@ loadNowPlaying();
 
 // TODO 필수 1: 이 renderCards를 #3의 renderCards로 바꾸기(평점 배지, 대체 표지, ♥ 버튼. 맨 아래 바꿔야 하는 4 곳)
 // renderCards : 영화 배열 ⇒ 보드에 간단한 카드를 그림(반환값 없음). #3의 renderCards로 바꿀 자리입니다
-function renderCards(list) {
-  const board = document.getElementById("board");
-  let html = "";
-  for (const m of list) {
-    // 포스터가 없으면 대체 표지(제목 첫 글자)
-    let poster = `<div class="poster-fallback">${escapeHTML(m.title[0])}</div>`;
-    if (m.poster !== null) {
-      poster = `<img class="poster" src="${posterUrl(m.poster, "w342")}" alt="${escapeHTML(m.title)} 포스터">`;
+const renderCards = (list) => {
+    const board = document.querySelector(".board");
+    board.innerHTML = "";
+    for (const m of list) {
+        const card = document.createElement("article");
+        card.className = "card";
+        if (m.rating >= 8) {
+            card.classList.add("hot");
+        }
+
+
+        card.setAttribute("data-type", m.type);
+        card.setAttribute("data-id", m.id);
+        let rank = "";
+        if (m.type === "boxoffice") {
+            rank = `<span class="rank">${m.rank}</span>`;
+        }
+        let poster = `<img class="poster" src="${posterUrl(m.poster, "w342")}" alt="${escapeHTML(m.title)} 포스터">`;
+        if (m.poster === null) {
+            card.classList.add("no-poster");
+            poster = `<div class="poster-fallback">${escapeHTML(m.title[0])}</div>`;
+        }
+        let heart = "like";
+        if (liked.includes(m.id)) {
+            heart = "like liked";
+        }
+        let rating = "평점 없음";
+        if (m.rating > 0) {
+            rating = m.rating.toFixed(1);
+        }
+
+        card.innerHTML = `
+           ${poster}
+           ${rank}
+           <span class="badge">${rating}</span>
+           <div class="info">
+           <h3>${m.title}</h3>
+           <p class="year">${m.year || "개봉일 미정"}</p>
+           <button class="${heart}" type="button">♥</button>
+           </div>`;
+        board.appendChild(card);
+     
+        //updateLikeCount();
     }
-    // 평가가 하나도 없는 영화(평점 0)는 숫자 대신 "평점 없음"
-    let rating = "평점 없음";
-    if (m.rating > 0) {
-      rating = m.rating.toFixed(1);
+    document.querySelector("#count").textContent = list.length + "편";
+    document.getElementById("likeCount").textContent = liked.length;
+    if (list.length === 0) {
+      setState(board, "empty", "조건에 맞는 영화가 없습니다.");
     }
-    // 카드 전체가 상세로 가는 링크(detail.html?id=영화번호).
-    // ♥ 버튼은 이 링크 안에 넣지 말고, #3처럼 <article> 카드와 location.href로 바꾼 뒤에 넣습니다
-    html += `
-      <a class="card" href="detail.html?id=${m.id}">
-        ${poster}
-        <span class="badge">${rating}</span>
-        <h2>${escapeHTML(m.title)}</h2>
-        <p class="year">${m.year || "개봉일 미정"}</p>
-      </a>`;
-  }
-  board.innerHTML = html;
-  if (list.length === 0) {
-    setState(board, "empty", "조건에 맞는 영화가 없습니다.");
-  }
 }
+function getView() {
+    const key = document.getElementById("sort").value;
+    return sortBy(movies, key, key !== "title");
+}
+
+function refresh() { 
+    renderCards(getView()); 
+}
+
+document.getElementById("sort").addEventListener("change", refresh);
+
+
 
 // TODO 필수 2: 검색창에서 Enter를 치면 tmdbUrl("search/movie", { query: 검색어 })로 다시 불러와 그리기
 // TODO 필수 3: #2의 sortBy와 #3의 getView로 정렬 2가지 이상(검색 결과에도 적용)
